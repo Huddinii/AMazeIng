@@ -1,18 +1,20 @@
-all:
-	@+make test
-	@make install
+NAME := a_maze_ing.py config.txt
+
+.PHONY: all install run debug clean lint lint-strict
+
+all: install lint lint-strict run
 
 install:
 	python3 -m pip install
 
 run:
-	python3 a_maze_ing.py config.txt
+	python3 $(NAME)
 
 debug:
-	python3 -m pdb
+	python3 -m pdb $(NAME)
 
 clean:
-	make clean -C
+	rm -rf __pycache__
 
 lint:
 	flake8 .
@@ -20,6 +22,4 @@ lint:
 
 lint-strict:
 	flake8 .
-	mypy --strict .
-
-.PHONY: all install run debug clean
+	mypy . --strict
