@@ -14,7 +14,7 @@ class Cell:
         self.walls = [Wall.NORTH, Wall.EAST, Wall.SOUTH, Wall.WEST]
         self.position = (x, y)
         self.checked = False
-        self.logo = False
+        self.traveled = False
 
     def out(self):
         out = 0
@@ -28,6 +28,7 @@ class Maze:
         self.height = height
         self.width = width
         self.cells = [[Cell(x, y) for x in range(height)]for y in range(width)]
+        self.path = None
 
     def create_logo(self):
         if self.height > 9 and self.width > 9:
@@ -36,18 +37,18 @@ class Maze:
             y = start[1]
             for x in range(start[0], start[0] + 5):
                 if (x != middle[0]):
-                    self.cells[x][y].logo = True
+                    self.cells[x][y].checked = True
                 else:
                     for y in range(start[1], start[1] + 3):
-                        self.cells[x][y].logo = True
+                        self.cells[x][y].checked = True
             start = (middle[0] - 2, middle[1] + 1)
             for x in range(start[0], start[0] + 5):
                 for y in range(start[1], start[1] + 3):
-                    self.cells[x][y].logo = True
-            self.cells[middle[0] - 1][middle[1] + 1].logo = False
-            self.cells[middle[0] - 1][middle[1] + 2].logo = False
-            self.cells[middle[0] + 1][middle[1] + 2].logo = False
-            self.cells[middle[0] + 1][middle[1] + 3].logo = False
+                    self.cells[x][y].checked = True
+            self.cells[middle[0] - 1][middle[1] + 1].checked = False
+            self.cells[middle[0] - 1][middle[1] + 2].checked = False
+            self.cells[middle[0] + 1][middle[1] + 2].checked = False
+            self.cells[middle[0] + 1][middle[1] + 3].checked = False
 
     def create_path(self, x: int, y: int):
         self.cells[x][y].checked = True
@@ -71,14 +72,48 @@ class Maze:
                 to_check.remove(check)
             elif self.cells[wall[check][0]][wall[check][1]].checked is True:
                 to_check.remove(check)
-            elif self.cells[wall[check][0]][wall[check][1]].logo is True:
-                to_check.remove(check)
             else:
                 self.cells[x][y].walls.remove(check)
                 self.cells[wall[check][0]][wall[check][1]] \
                     .walls.remove(oposite[check])
                 self.create_path(wall[check][0], wall[check][1])
                 to_check.remove(check)
+
+    def solve_maze(self, start: tuple[int, int], end: tuple[int, int]):
+        q = []
+        self.cells[start[0]][start[1]].traveled = True
+        q.append(Node(start))
+        walls = [Wall.NORTH, Wall.EAST, Wall.SOUTH, Wall.WEST]
+        while len(q) > 0:
+            n = q[0]
+            q.pop(0)
+            dir = {
+                    Wall.NORTH: (n.coords[0] - 1, n.coords[1]),
+                    Wall.EAST: (n.coords[0], n.coords[1] + 1),
+                    Wall.SOUTH: (n.coords[0] + 1, n.coords[1]),
+                    Wall.WEST: (n.coords[0], n.coords[1] - 1),
+                    }
+            if n.coords == end:
+                out = ""
+                while n.parent is not None:
+                    out += n.dir
+                    n = n.parent
+                self.path = out[::-1]
+            for wall in [x for x in walls if x not in
+                         self.cells[n.coords[0]][n.coords[1]].walls]:
+                if self.cells[dir[wall][0]][dir[wall][1]].traveled is False:
+                    self.cells[dir[wall][0]][dir[wall][1]].traveled = True
+                    w = Node(dir[wall])
+                    w.dir = wall.name[0]
+                    w.parent = n
+                    q.append(w)
+
+
+class Node:
+    def __init__(self, coords: tuple[int, int]):
+        self.coords = coords
+        self.parent = None
+        self.dir = None
 
 
 class MazeGenerator:
@@ -92,21 +127,33 @@ class MazeGenerator:
         self.exit = ex
         self.perfect = perfect
 
-    def generate_maze(self) -> Maze:
+    def generate_maze(self) -> None:
         self.maze = Maze(self.height, self.width)
         self.maze.create_logo()
-        return self.maze
+        self.maze.create_path(0, 0)
+        self.maze.solve_maze(self.start, self.exit)
 
-    def set_seed(seed: int) -> None:
+    def set_seed(self, seed: int) -> None:
         random.seed(seed)
+
+    def out(self, output: str | None = None):
+        out_str = ""
+        for x in range(self.height):
+            for y in range(self.width):
+                hexchar = hex(self.maze.cells[x][y].out())
+                out_str += hexchar.replace("0x", '').capitalize()
+            out_str += '\n'
+        if output is None:
+            print(out_str)
+            print(f"{self.maze.path}")
+        else:
+            with open(output, "w") as file:
+                file.write(out_str)
+                file.write(f"\n{self.maze.path}")
 
 
 if __name__ == "__main__":
-    out = "0123456789ABCDEF"
     mazegen = MazeGenerator(11, 11, (0, 0), (9, 9))
-    maze = mazegen.generate_maze()
-    maze.create_path(0, 0)
-    for x in range(11):
-        for y in range(11):
-            print(out[maze.cells[x][y].out()], end='')
-        print()
+    mazegen.set_seed(1000)
+    mazegen.generate_maze()
+    mazegen.out("output.txt")
