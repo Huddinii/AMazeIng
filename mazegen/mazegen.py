@@ -212,20 +212,26 @@ class MazeGenerator:
                 file.write(f"{self.maze.path}\n")
 
     def check_params(self) -> None:
+        if self.width < 3 or self.height < 3:
+            raise RuntimeError("Maze is too small. Please set height and"
+                               " width greater then 3.")
+        if self.width > 99 or self.height > 99:
+            raise RuntimeError("Maze is too big. Please set height and"
+                               " width smaller then 100.")
         x, y = self.start
         if (x < 0 or x >= self.height or y < 0 or y >= self.width):
             raise RuntimeError("Start is outside the Maze")
+        if self.maze.input_check(x, y) is True:
+            raise RuntimeError("Start is inside 42 Logo")
         x, y = self.exit
         if (x < 0 or x >= self.height or y < 0 or y >= self.width):
             raise RuntimeError("Exit is outside the Maze")
-        if self.maze.input_check(self.start) is True:
-            raise RuntimeError("Start is inside 42 Logo")
-        if self.maze.input_check(self.exit) is True:
+        if self.maze.input_check(x, y) is True:
             raise RuntimeError("Exit is inside 42 Logo")
 
 
 if __name__ == "__main__":
-    mazegen = MazeGenerator(11, 11, (0, 0), (9, 9), sort="PRIM")
+    mazegen = MazeGenerator(2, 2, (0, 0), (1, 1), sort="PRIM")
     mazegen.set_seed(1000)
     mazegen.generate_maze()
-    mazegen.out("output.txt")
+    mazegen.out()
