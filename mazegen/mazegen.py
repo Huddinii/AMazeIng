@@ -192,7 +192,7 @@ class MazeGenerator:
     def set_seed(self, seed: int) -> None:
         random.seed(seed)
 
-    def out(self, output: str | None = None) -> None:
+    def out(self, output: str | None = None) -> tuple[str]:
         out_str = ""
         for x in range(self.height):
             for y in range(self.width):
@@ -210,6 +210,7 @@ class MazeGenerator:
                 file.write(f"{self.start[0]},{self.start[1]}\n")
                 file.write(f"{self.exit[0]},{self.exit[1]}\n")
                 file.write(f"{self.maze.path}\n")
+        return (out_str, self.maze.path)
 
     def check_params(self) -> None:
         if self.width < 3 or self.height < 3:

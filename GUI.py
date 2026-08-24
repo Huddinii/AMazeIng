@@ -18,17 +18,19 @@ t_color = TColor()
 
 def player_interaction() -> None:
     # need actual functions to do the stuff instread of just print
+    print("1. Re-generate a new maze")
+    print("2. Show/Hide path from entry to exit")
+    print("3. Rotate maze color")
+    print("4. Quit")
     input_str: str = input("type number 1-4: ")
     match input_str:
         case "1":
-            print("Re-generate a new maze")
+            draw_maze()
         case "2":
             print("Show/Hide path from entry to exit")
         case "3":
-            print("Rotate maze color")
             t_color()
         case "4":
-            print("Quit")
             exit(0)
 
 
@@ -41,30 +43,39 @@ def config_read() -> dict[str]:
                 key, value = line.split('=', 1)
                 config[key.lower().strip()] = value.strip()
 
+    start: tuple = config['entry'].split(',', 1)
+    exit: tuple = config['exit'].split(',', 1)
+
+    try:
+        config.update({'width': int(config['width'])})
+        config.update({'height': int(config['height'])})
+        config.update({'start': tuple(int(x) for x in start)})
+        config.update({'exit': tuple(int(x) for x in exit)})
+        config.update({'perfect': bool(config['perfect'])})
+        config.update({'algo': config.get('algorithm', None)})
+        config.update({'seed': int(config.get('seed', None))})
+        config.update({'output': config['output_file']})
+    except TypeError as e:
+        print(e)
+
     return config
 
 
 def draw_maze() -> None:
     config: dict[str] = config_read()
-    start: tuple = config['entry'].split(',', 1)
-    exit: tuple = config['exit'].split(',', 1)
+
+    mazegen = MazeGenerator(config['height'], config['width'], config['start'],
+                            config['exit'], config['perfect'], config['algo'])
+
+    if config['seed'] is not None:
+        mazegen.set_seed(config['seed'])
 
     try:
-        width = int(config['width'])
-        height = int(config['height'])
-        start = tuple(int(x) for x in start)
-        exit = tuple(int(x) for x in exit)
-        perfect = bool(config['perfect'])
-        algo = config.get('algorithm', None)
-        seed = int(config.get('seed', None))
-    except TypeError as e:
+        mazegen.generate_maze()
+    except RuntimeError as e:
         print(e)
-
-    mazegen = MazeGenerator(height, width, start, exit, perfect, algo)
-    if seed is not None:
-        mazegen.set_seed(seed)
-    mazegen.generate_maze()
-    mazegen.out("output.txt")
+    else:
+        mazegen.out(config['output'])
 
 
 if __name__ == '__main__':
