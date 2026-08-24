@@ -152,6 +152,10 @@ class Maze:
                 if len(self.cells[x][y].walls) == 3:
                     self.cells[x][y].walls.pop(random.randint(0, 2))
 
+    def input_check(self, x: int, y: int) -> bool:
+        if self.cells[x][y].logo is True:
+            return True
+
 
 class Node:
     def __init__(self, coords: tuple[int, int]) -> None:
@@ -163,19 +167,20 @@ class Node:
 class MazeGenerator:
     maze: Maze
 
-    def __init__(self, width: int, height: int, start: tuple[int, int],
-                 ex: tuple[int, int], perfect: bool = True,
+    def __init__(self, width: int, height: int, entry: tuple[int, int],
+                 exit: tuple[int, int], perfect: bool = True,
                  sort: str = "DFS") -> None:
         self.width = width
         self.height = height
-        self.start = start
-        self.exit = ex
+        self.start = entry
+        self.exit = exit
         self.perfect = perfect
         self.algo = sort
 
     def generate_maze(self) -> None:
         self.maze = Maze(self.height, self.width)
         self.maze.create_logo()
+        self.check_params()
         if self.algo == "DFS":
             self.maze.dfs(0, 0)
         else:
@@ -205,6 +210,18 @@ class MazeGenerator:
                 file.write(f"{self.start[0]},{self.start[1]}\n")
                 file.write(f"{self.exit[0]},{self.exit[1]}\n")
                 file.write(f"{self.maze.path}\n")
+
+    def check_params(self) -> None:
+        x, y = self.start
+        if (x < 0 or x >= self.height or y < 0 or y >= self.width):
+            raise RuntimeError("Start is outside the Maze")
+        x, y = self.exit
+        if (x < 0 or x >= self.height or y < 0 or y >= self.width):
+            raise RuntimeError("Exit is outside the Maze")
+        if self.maze.input_check(self.start) is True:
+            raise RuntimeError("Start is inside 42 Logo")
+        if self.maze.input_check(self.exit) is True:
+            raise RuntimeError("Exit is inside 42 Logo")
 
 
 if __name__ == "__main__":
