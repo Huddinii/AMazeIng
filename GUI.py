@@ -1,5 +1,5 @@
-from configparser import ConfigParser
 from termcolor import colored
+from mazegen import MazeGenerator
 
 
 class TColor:
@@ -32,10 +32,40 @@ def player_interaction() -> None:
             exit(0)
 
 
-def config_read() -> None:
-    config = ConfigParser()
-    config.read("config.txt")
+def config_read() -> dict[str]:
+    config = {}
+    with open('config.txt', 'r') as f:
+        for line in f:
+            line = line.strip()
+            if '=' in line and not line.startswith('#'):
+                key, value = line.split('=', 1)
+                config[key.lower().strip()] = value.strip()
+
+    return config
 
 
-def draw_maze(maze_parts: list[str]) -> None:
-    pass
+def draw_maze() -> None:
+    config: dict[str] = config_read()
+    start: tuple = config['entry'].split(',', 1)
+    exit: tuple = config['exit'].split(',', 1)
+
+    try:
+        width = int(config['width'])
+        height = int(config['height'])
+        start = tuple(int(x) for x in start)
+        exit = tuple(int(x) for x in exit)
+        perfect = bool(config['perfect'])
+        algo = config.get('algorithm', None)
+        seed = int(config.get('seed', None))
+    except TypeError as e:
+        print(e)
+
+    mazegen = MazeGenerator(height, width, start, exit, perfect, algo)
+    if seed is not None:
+        mazegen.set_seed(seed)
+    mazegen.generate_maze()
+    mazegen.out("output.txt")
+
+
+if __name__ == '__main__':
+    draw_maze()

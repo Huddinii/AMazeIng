@@ -2,11 +2,11 @@
 # Format: KEY=VALUE
 # Lines starting with '#' are comments
 
-# Maze width (number of cells)
-WIDTH=20
-
 # Maze height
-HEIGHT=15
+HEIGHT=20
+
+# Maze width (number of cells)
+WIDTH=15
 
 # Entry coordinates (x,y)
 ENTRY=0,0
@@ -21,7 +21,9 @@ OUTPUT_FILE=maze.txt
 PERFECT=True
 
 # Seed
+SEED=1000
 
-# Algorithm
+# Default Algorithm
+ALGORITHM="DFS"
 
 # Display mode

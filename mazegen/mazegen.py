@@ -28,7 +28,7 @@ class Maze:
     def __init__(self, height: int, width: int) -> None:
         self.height = height
         self.width = width
-        self.cells = [[Cell(x, y) for x in range(height)]for y in range(width)]
+        self.cells = [[Cell(x, y) for x in range(width)]for y in range(height)]
         self.path: str | None = None
 
     def create_logo(self) -> None:
@@ -167,11 +167,11 @@ class Node:
 class MazeGenerator:
     maze: Maze
 
-    def __init__(self, width: int, height: int, entry: tuple[int, int],
+    def __init__(self, height: int, width: int, entry: tuple[int, int],
                  exit: tuple[int, int], perfect: bool = True,
                  sort: str = "DFS") -> None:
-        self.width = width
         self.height = height
+        self.width = width
         self.start = entry
         self.exit = exit
         self.perfect = perfect
@@ -228,10 +228,3 @@ class MazeGenerator:
             raise RuntimeError("Exit is outside the Maze")
         if self.maze.input_check(x, y) is True:
             raise RuntimeError("Exit is inside 42 Logo")
-
-
-if __name__ == "__main__":
-    mazegen = MazeGenerator(2, 2, (0, 0), (1, 1), sort="PRIM")
-    mazegen.set_seed(1000)
-    mazegen.generate_maze()
-    mazegen.out()
