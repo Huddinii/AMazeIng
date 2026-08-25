@@ -24,6 +24,6 @@ PERFECT=True
 SEED=1000
 
 # Default Algorithm
-ALGORITHM="DFS"
+ALGORITHM=DFS
 
 # Display mode

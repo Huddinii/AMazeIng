@@ -23,7 +23,7 @@ class Cell:
             out += 2 ** wall.value
         return out
 
-
+    
 class Maze:
     def __init__(self, height: int, width: int) -> None:
         self.height = height
