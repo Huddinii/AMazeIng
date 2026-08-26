@@ -3,6 +3,8 @@ from mazegen import MazeGenerator
 
 
 class TColor:
+    # on 0 always white use this to generate new
+    # make it so that every element goes through color and only gets changed on second run of list?
     def __init__(self):
         self.colors = ['green', 'red', 'yellow', 'blue', 'white']
         self.i = 0
