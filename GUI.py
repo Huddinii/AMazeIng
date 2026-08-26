@@ -26,6 +26,7 @@ def player_interaction() -> None:
     match input_str:
         case "1":
             draw_maze()
+            fill_maze()
         case "2":
             print("Show/Hide path from entry to exit")
         case "3":
@@ -78,69 +79,70 @@ def draw_maze() -> None:
         mazegen.out(config['output'])
 
 
+def get_reset() -> str:
+    return "\033[0m"
+
+
+def top(n=1):
+    return f"\033[53m{' ' * n}{get_reset()}"
+
+
+def bottom(n=1):
+    return f"\033[4m{' ' * n}{get_reset()}"
+
+
+def top_bottom(n=1):
+    return f"\033[53m\033[4m{' ' * n}{get_reset()}"
+
+
 def fill_maze() -> None:
     config: dict[str] = config_read()
-    # WSEN
-    # 8421
-    # 0000 = 0
-    # 0001 = 1
-    # 0010 = 2
-    # 0011 = 3
-    # 0100 = 4
-    # 0101 = 5
-    # 0110 = 6
-    # 0111 = 7
-    # 1000 = 8
-    # 1001 = 9
-    # 1010 = A
-    # 1011 = B
-    # 1100 = C
-    # 1101 = D
-    # 1110 = E
-    # 1111 = F
     with open(config['output'], "r") as f:
         maze = []
-        config['width']
-        # print("  " + ("_" * config['width'] * 2))
+        print()
+        # over_under = "\033[53m\033[4m \033[0m"
+        # under = "\033[4m \033[0m"
+        # over = "\033[53m "
         for line in f:
+            if line.startswith("\n"):
+                break
             for char in line:
                 match char:
                     case "\n":
-                        print(*maze)
+                        print(*maze, sep='')
                         maze = []
                     case "0":
-                        maze.append("┼")
+                        maze.append("   ")
                     case "1":
-                        maze.append("╷")
+                        maze.append(top(3))
                     case "2":
-                        maze.append("╴")
+                        maze.append("  |")
                     case "3":
-                        maze.append("┐")
+                        maze.append(top(2) + "|")
                     case "4":
-                        maze.append("╵")
+                        maze.append(bottom(3))
                     case "5":
-                        maze.append("-")
+                        maze.append(top_bottom(3))
                     case "6":
-                        maze.append("┘")
+                        maze.append(bottom(2) + "|")
                     case "7":
-                        maze.append("┤")
+                        maze.append(top_bottom(2) + "|")
                     case "8":
-                        maze.append("╶")
+                        maze.append("|  ")
                     case "9":
-                        maze.append("┌")
+                        maze.append("|" + top(2))
                     case "A":
-                        maze.append("|")
+                        maze.append("| |")
                     case "B":
-                        maze.append("┬")
+                        maze.append("|" + top(1) + "|")
                     case "C":
-                        maze.append("└")
+                        maze.append("|" + bottom(2))
                     case "D":
-                        maze.append("├")
+                        maze.append("|" + top_bottom(2))
                     case "E":
-                        maze.append("┴")
+                        maze.append("|" + bottom(1) + "|")
                     case "F":
-                        maze.append(" ")
-
+                        maze.append("███")
 
 
 if __name__ == '__main__':
