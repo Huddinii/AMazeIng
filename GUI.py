@@ -3,16 +3,21 @@ from mazegen import MazeGenerator
 
 
 class TColor:
-    # on 0 always white use this to generate new
-    # make it so that every element goes through color and only gets changed on second run of list?
     def __init__(self):
-        self.colors = ['green', 'red', 'yellow', 'blue', 'white']
+        self.colors = ['white', 'green', 'red', 'yellow', 'blue']
         self.i = 0
+        self.calls = 0
 
-    def __call__(self) -> None:
-        text = colored('┤', self.colors[self.i])
-        print(text)
+    def __call__(self, maze: str) -> str:
+        if self.calls == 0:
+            return colored(maze, 'white')
+        return colored(maze, self.colors[self.i])
+
+    def next_call(self) -> None:
+        self.calls += 1
         self.i += 1
+        if self.i == len(self.colors):
+            self.i = 0
 
 
 t_color = TColor()
@@ -20,6 +25,7 @@ t_color = TColor()
 
 def player_interaction() -> None:
     # need actual functions to do the stuff instread of just print
+    # config: dict[str] = config_read()
     print("1. Re-generate a new maze")
     print("2. Show/Hide path from entry to exit")
     print("3. Rotate maze color")
@@ -32,7 +38,7 @@ def player_interaction() -> None:
         case "2":
             print("Show/Hide path from entry to exit")
         case "3":
-            t_color()
+            fill_maze()
         case "4":
             exit(0)
 
@@ -81,20 +87,16 @@ def draw_maze() -> None:
         mazegen.out(config['output'])
 
 
-def get_reset() -> str:
-    return "\033[0m"
-
-
 def top(n=1):
-    return f"\033[53m{' ' * n}{get_reset()}"
+    return f"\033[53m{' ' * n}\033[55m"
 
 
 def bottom(n=1):
-    return f"\033[4m{' ' * n}{get_reset()}"
+    return f"\033[4m{' ' * n}\033[24m"
 
 
 def top_bottom(n=1):
-    return f"\033[53m\033[4m{' ' * n}{get_reset()}"
+    return f"\033[53m\033[4m{' ' * n}\033[55m\033[24m"
 
 
 def fill_maze() -> None:
@@ -102,51 +104,49 @@ def fill_maze() -> None:
     with open(config['output'], "r") as f:
         maze = []
         print()
-        # over_under = "\033[53m\033[4m \033[0m"
-        # under = "\033[4m \033[0m"
-        # over = "\033[53m "
         for line in f:
             if line.startswith("\n"):
                 break
             for char in line:
                 match char:
                     case "\n":
-                        print(*maze, sep='')
+                        print(t_color("".join(maze)))
                         maze = []
                     case "0":
-                        maze.append("   ")
+                        maze.append(t_color("   "))
                     case "1":
-                        maze.append(top(3))
+                        maze.append(t_color(top(3)))
                     case "2":
-                        maze.append("  |")
+                        maze.append(t_color("  |"))
                     case "3":
-                        maze.append(top(2) + "|")
+                        maze.append(t_color(top(2) + "|"))
                     case "4":
-                        maze.append(bottom(3))
+                        maze.append(t_color(bottom(3)))
                     case "5":
-                        maze.append(top_bottom(3))
+                        maze.append(t_color(top_bottom(3)))
                     case "6":
-                        maze.append(bottom(2) + "|")
+                        maze.append(t_color(bottom(2) + "|"))
                     case "7":
-                        maze.append(top_bottom(2) + "|")
+                        maze.append(t_color(top_bottom(2) + "|"))
                     case "8":
-                        maze.append("|  ")
+                        maze.append(t_color("|  "))
                     case "9":
-                        maze.append("|" + top(2))
+                        maze.append(t_color("|" + top(2)))
                     case "A":
-                        maze.append("| |")
+                        maze.append(t_color("| |"))
                     case "B":
-                        maze.append("|" + top(1) + "|")
+                        maze.append(t_color("|" + top(1) + "|"))
                     case "C":
-                        maze.append("|" + bottom(2))
+                        maze.append(t_color("|" + bottom(2)))
                     case "D":
-                        maze.append("|" + top_bottom(2))
+                        maze.append(t_color("|" + top_bottom(2)))
                     case "E":
-                        maze.append("|" + bottom(1) + "|")
+                        maze.append(t_color("|" + bottom(1) + "|"))
                     case "F":
-                        maze.append("███")
+                        maze.append(colored("\033[36m███"))
 
+        t_color.next_call()
 
-if __name__ == '__main__':
-    draw_maze()
-    fill_maze()
+# if __name__ == '__main__':
+#     draw_maze()
+#     fill_maze()
