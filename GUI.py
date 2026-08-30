@@ -110,7 +110,7 @@ def top_bottom(n=1):
 def fill_maze() -> None:
     config: dict[str] = config_read()
     with open(config['output'], "r") as f:
-        maze = []
+        maze: list[str] = []
         for line in f:
             if line.startswith("\n"):
                 break
@@ -153,18 +153,58 @@ def fill_maze() -> None:
                         maze.append(colored("\033[36m███"))
 
         t_color.next_call()
-        solve_maze_draw(f, config['height'])
+        start_end_coord(f, config['height'])
 
 
-def solve_maze_draw(f: IO, maze_height: int) -> None:
+def start_end_coord(f: IO, maze_height: int) -> dict[str, tuple]:
+    lines: list[str] = []
+    start: tuple = None
+    end: tuple = None
     for line in f:
-        line = line.strip()
-        if ',' in line:
+        lines.append(line.strip())
+
+    for i in range(len(lines) - 1):
+        line = lines[i]
+        nextline = lines[i + 1]
+
+        if ',' in line and ',' in nextline:
             x_str, y_str = line.split(',', 1)
-            x, y = int(x_str.strip()), int(y_str.strip())
-            print_char(x + 1, y, colored('█', 'red'))
+            start = (int(x_str.strip()), int(y_str.strip()))
+            print_char(start[0], start[1], colored('█', 'red'))
+        elif ',' in line and ',' not in nextline:
+            x_str, y_str = line.split(',', 1)
+            end = (int(x_str.strip()), int(y_str.strip()))
+            print_char(end[0], end[1], colored('█', 'red'))
+
     print(f"\033[{maze_height+2};0H", end="", flush=True)
+    ret = {'start': start, 'end': end}
+    return ret
 
 
 def print_char(x: int, y: int, char: str) -> None:
     print(f"\033[{y+1};{x+1}H{char}", end="", flush=True)
+
+
+def draw_path() -> None:
+    config: dict[str] = config_read()
+    path = ''
+    solve = {
+        'N': (0, -1),
+        'S': (0, 1),
+        'E': (3, 0),
+        "W": (-3, 0),
+    }
+    with open(config['output'], "r") as f:
+        coords = start_end_coord(f, config['height'])
+        start = coords['start']
+        print(start)
+        f.seek(0)
+        for line in f:
+            line = line.strip()
+            if line and set(line) <= {'N', 'S', 'E', 'W'}:
+                path = line
+        print(path)
+
+
+if __name__ == '__main__':
+    draw_path()
