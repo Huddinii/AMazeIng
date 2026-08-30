@@ -1,5 +1,6 @@
 from termcolor import colored
 from mazegen import MazeGenerator
+from typing import IO
 
 
 class TColor:
@@ -23,6 +24,10 @@ class TColor:
 t_color = TColor()
 
 
+def clear_screen() -> None:
+    print("\033[2J\033[H", end="", flush=True)
+
+
 def player_interaction() -> None:
     # need actual functions to do the stuff instread of just print
     # config: dict[str] = config_read()
@@ -33,11 +38,14 @@ def player_interaction() -> None:
     input_str: str = input("type number 1-4: ")
     match input_str:
         case "1":
+            clear_screen()
             draw_maze()
             fill_maze()
         case "2":
+            clear_screen()
             print("Show/Hide path from entry to exit")
         case "3":
+            clear_screen()
             fill_maze()
         case "4":
             exit(0)
@@ -103,7 +111,6 @@ def fill_maze() -> None:
     config: dict[str] = config_read()
     with open(config['output'], "r") as f:
         maze = []
-        print()
         for line in f:
             if line.startswith("\n"):
                 break
@@ -146,7 +153,18 @@ def fill_maze() -> None:
                         maze.append(colored("\033[36m███"))
 
         t_color.next_call()
+        solve_maze_draw(f, config['height'])
 
-# if __name__ == '__main__':
-#     draw_maze()
-#     fill_maze()
+
+def solve_maze_draw(f: IO, maze_height: int) -> None:
+    for line in f:
+        line = line.strip()
+        if ',' in line:
+            x_str, y_str = line.split(',', 1)
+            x, y = int(x_str.strip()), int(y_str.strip())
+            print_char(x + 1, y, colored('█', 'red'))
+    print(f"\033[{maze_height+2};0H", end="", flush=True)
+
+
+def print_char(x: int, y: int, char: str) -> None:
+    print(f"\033[{y+1};{x+1}H{char}", end="", flush=True)
