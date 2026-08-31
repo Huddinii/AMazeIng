@@ -21,9 +21,6 @@ class TColor:
             self.i = 0
 
 
-t_color = TColor()
-
-
 def clear_screen() -> None:
     print("\033[2J\033[H", end="", flush=True)
 
@@ -31,24 +28,26 @@ def clear_screen() -> None:
 def player_interaction() -> None:
     # need actual functions to do the stuff instread of just print
     # config: dict[str] = config_read()
-    print("1. Re-generate a new maze")
-    print("2. Show/Hide path from entry to exit")
-    print("3. Rotate maze color")
-    print("4. Quit")
-    input_str: str = input("type number 1-4: ")
-    match input_str:
-        case "1":
-            clear_screen()
-            draw_maze()
-            fill_maze()
-        case "2":
-            clear_screen()
-            print("Show/Hide path from entry to exit")
-        case "3":
-            clear_screen()
-            fill_maze()
-        case "4":
-            exit(0)
+    t_color = TColor()
+    while 1:
+        print("1. Re-generate a new maze")
+        print("2. Show/Hide path from entry to exit")
+        print("3. Rotate maze color")
+        print("4. Quit")
+        input_str: str = input("type number 1-4: ")
+        match input_str:
+            case "1":
+                clear_screen()
+                draw_maze()
+                fill_maze(t_color)
+            case "2":
+                clear_screen()
+                print("Show/Hide path from entry to exit")
+            case "3":
+                clear_screen()
+                fill_maze(t_color)
+            case "4":
+                break
 
 
 def config_read() -> dict[str]:
@@ -95,19 +94,19 @@ def draw_maze() -> None:
         mazegen.out(config['output'])
 
 
-def top(n=1):
+def top(n: int = 1):
     return f"\033[53m{' ' * n}\033[55m"
 
 
-def bottom(n=1):
+def bottom(n: int = 1):
     return f"\033[4m{' ' * n}\033[24m"
 
 
-def top_bottom(n=1):
+def top_bottom(n: int = 1):
     return f"\033[53m\033[4m{' ' * n}\033[55m\033[24m"
 
 
-def fill_maze() -> None:
+def fill_maze(t_color: TColor) -> None:
     config: dict[str] = config_read()
     with open(config['output'], "r") as f:
         maze: list[str] = []
@@ -168,21 +167,24 @@ def start_end_coord(f: IO, maze_height: int) -> dict[str, tuple]:
         nextline = lines[i + 1]
 
         if ',' in line and ',' in nextline:
-            x_str, y_str = line.split(',', 1)
-            start = (int(x_str.strip()), int(y_str.strip()))
+            y_str, x_str = line.split(',', 1)
+            start = (int(y_str.strip()), int(x_str.strip()))
             print_char(start[0], start[1], colored('█', 'red'))
+
         elif ',' in line and ',' not in nextline:
-            x_str, y_str = line.split(',', 1)
-            end = (int(x_str.strip()), int(y_str.strip()))
+            y_str, x_str = line.split(',', 1)
+            end = (int(y_str.strip()), int(x_str.strip()))
             print_char(end[0], end[1], colored('█', 'red'))
 
-    print(f"\033[{maze_height+2};0H", end="", flush=True)
+    print(f"\033[{maze_height+1};0H", end="", flush=True)
     ret = {'start': start, 'end': end}
     return ret
 
 
-def print_char(x: int, y: int, char: str) -> None:
-    print(f"\033[{y+1};{x+1}H{char}", end="", flush=True)
+def print_char(y: int, x: int, char: str) -> None:
+    # config: dict[str] = config_read()
+    # if y < config['height'] and x < config['width']:
+    print(f"\033[{y+1};{(x*3)+2}H{char}", end="", flush=True)
 
 
 def draw_path() -> None:
@@ -206,5 +208,5 @@ def draw_path() -> None:
         print(path)
 
 
-if __name__ == '__main__':
-    draw_path()
+# if __name__ == '__main__':
+#     draw_path()

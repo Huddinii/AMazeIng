@@ -3,5 +3,4 @@ import GUI
 
 
 if __name__ == '__main__':
-    while 1:
-        GUI.player_interaction()
+    GUI.player_interaction()
