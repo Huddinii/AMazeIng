@@ -53,17 +53,17 @@ def player_interaction() -> None:
         match input_str:
             case "1":
                 clear_screen()
-                fill_maze(config, maze, t_color)
-                draw_maze(maze)
+                fill_maze(config, maze)
+                draw_maze(maze, t_color)
             case "2":
                 clear_screen()
-                draw_path(config, maze, t_color)
-                draw_maze(maze)
+                draw_path(config, maze)
+                draw_maze(maze, t_color)
             case "3":
                 clear_screen()
                 t_color.next_call()
-                fill_maze(config, maze, t_color)
-                draw_maze(maze)
+                fill_maze(config, maze)
+                draw_maze(maze, t_color)
             case "4":
                 break
 
@@ -95,10 +95,10 @@ def config_read() -> dict[str]:
     return config
 
 
-def draw_maze(maze: list[list]) -> None:
+def draw_maze(maze: list[list], t_color: TColor) -> None:
     for x in range(len(maze)):
         for y in range(len(maze[x])):
-            print(maze[x][y], end='')
+            print(t_color(maze[x][y][0], maze[x][y][1]), end='')
         print()
 
 
@@ -114,7 +114,7 @@ def top_bottom(n: int = 1):
     return f"\033[53m\033[4m{' ' * n}\033[55m\033[24m"
 
 
-def fill_maze(config: dict, maze: list[list], t_color: TColor) -> None:
+def fill_maze(config: dict, maze: list[list]) -> None:
     x, y = 0, 0
     with open(config['output'], "r") as f:
         for line in f:
@@ -126,58 +126,58 @@ def fill_maze(config: dict, maze: list[list], t_color: TColor) -> None:
                         x += 1
                         y = 0
                     case "0":
-                        maze[x][y] = t_color("   ")
+                        maze[x][y] = ("   ", 'on_black', 'on_black')
                         y += 1
                     case "1":
-                        maze[x][y] = t_color(top(3))
+                        maze[x][y] = (top(3), 'on_black')
                         y += 1
                     case "2":
-                        maze[x][y] = t_color("  |")
+                        maze[x][y] = ("  |", 'on_black')
                         y += 1
                     case "3":
-                        maze[x][y] = t_color(top(2) + "|")
+                        maze[x][y] = (top(2) + "|", 'on_black')
                         y += 1
                     case "4":
-                        maze[x][y] = t_color(bottom(3))
+                        maze[x][y] = (bottom(3), 'on_black')
                         y += 1
                     case "5":
-                        maze[x][y] = t_color(top_bottom(3))
+                        maze[x][y] = (top_bottom(3), 'on_black')
                         y += 1
                     case "6":
-                        maze[x][y] = t_color(bottom(2) + "|")
+                        maze[x][y] = (bottom(2) + "|", 'on_black')
                         y += 1
                     case "7":
-                        maze[x][y] = t_color(top_bottom(2) + "|")
+                        maze[x][y] = (top_bottom(2) + "|", 'on_black')
                         y += 1
                     case "8":
-                        maze[x][y] = t_color("|  ")
+                        maze[x][y] = ("|  ", 'on_black')
                         y += 1
                     case "9":
-                        maze[x][y] = t_color("|" + top(2))
+                        maze[x][y] = ("|" + top(2), 'on_black')
                         y += 1
                     case "A":
-                        maze[x][y] = t_color("| |")
+                        maze[x][y] = ("| |", 'on_black')
                         y += 1
                     case "B":
-                        maze[x][y] = t_color("|" + top(1) + "|")
+                        maze[x][y] = ("|" + top(1) + "|", 'on_black')
                         y += 1
                     case "C":
-                        maze[x][y] = t_color("|" + bottom(2))
+                        maze[x][y] = ("|" + bottom(2), 'on_black')
                         y += 1
                     case "D":
-                        maze[x][y] = t_color("|" + top_bottom(2))
+                        maze[x][y] = ("|" + top_bottom(2), 'on_black')
                         y += 1
                     case "E":
-                        maze[x][y] = t_color("|" + bottom(1) + "|")
+                        maze[x][y] = ("|" + bottom(1) + "|", 'on_black')
                         y += 1
                     case "F":
-                        maze[x][y] = colored("\033[36m███")
+                        maze[x][y] = ("\033[36m███", 'on_black')
                         y += 1
 
-        start_end_coord(maze, t_color, f, config['height'])
+        start_end_coord(maze, f, config['height'])
 
 
-def start_end_coord(maze: list[list], t_color: TColor, f: IO, maze_height: int) -> None:
+def start_end_coord(maze: list[list], f: IO, maze_height: int) -> None:
     lines: list[str] = []
     for line in f:
         lines.append(line.strip())
@@ -189,17 +189,17 @@ def start_end_coord(maze: list[list], t_color: TColor, f: IO, maze_height: int) 
         if ',' in line and ',' in nextline:
             y_str, x_str = line.split(',', 1)
             x, y = int(y_str.strip()), int(x_str.strip())
-            maze[x][y] = "\033[41m" + maze[x][y] + "\033[0m"
+            maze[x][y] = (maze[x][y][0], 'on_green')
 
         elif ',' in line and ',' not in nextline:
             y_str, x_str = line.split(',', 1)
             x, y = int(y_str.strip()), int(x_str.strip())
             print(maze[x][y])
-            maze[x][y] = "\033[41m" + maze[x][y] + "\033[0m"
+            maze[x][y] = (maze[x][y][0], 'on_green')
             print(maze[x][y])
 
 
-def draw_path(config: dict, maze: list[list], t_color: TColor) -> None:
+def draw_path(config: dict, maze: list[list]) -> None:
     path: str = []
 
     with open(config['output'], "r") as f:
@@ -213,16 +213,16 @@ def draw_path(config: dict, maze: list[list], t_color: TColor) -> None:
             match char:
                 case "N":
                     x -= 1
-                    maze[x][y] = t_color(maze[x][y], on_str='on_magenta')
+                    maze[x][y] = (maze[x][y][0], 'on_magenta')
                 case "S":
                     x += 1
-                    maze[x][y] = t_color(maze[x][y], on_str='on_magenta')
+                    maze[x][y] = (maze[x][y][0], 'on_magenta')
                 case "E":
                     y += 1
-                    maze[x][y] = t_color(maze[x][y], on_str='on_magenta')
+                    maze[x][y] = (maze[x][y][0], 'on_magenta')
                 case "W":
                     y -= 1
-                    maze[x][y] = t_color(maze[x][y], on_str='on_magenta')
+                    maze[x][y] = (maze[x][y][0], 'on_magenta')
 
 
 # if __name__ == '__main__':

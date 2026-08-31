@@ -12,7 +12,7 @@ WIDTH=15
 ENTRY=0,0
 
 # Exit coordinates (x,y)
-EXIT=21,14
+EXIT=19,14
 
 # Output filename
 OUTPUT_FILE=maze.txt
