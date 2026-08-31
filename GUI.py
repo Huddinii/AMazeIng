@@ -80,16 +80,16 @@ def config_read() -> dict[str]:
 def draw_maze() -> None:
     config: dict[str] = config_read()
 
-    mazegen = MazeGenerator(config['height'], config['width'], config['start'],
-                            config['exit'], config['perfect'], config['algo'])
-
-    if config['seed'] is not None:
-        mazegen.set_seed(config['seed'])
-
     try:
+        mazegen = MazeGenerator(config['height'], config['width'],
+                                config['start'], config['exit'],
+                                config['perfect'], config['algo'])
+        if config['seed'] is not None:
+            mazegen.set_seed(config['seed'])
         mazegen.generate_maze()
     except RuntimeError as e:
-        print(e)
+        print("Error:", e)
+        exit(0)
     else:
         mazegen.out(config['output'])
 
@@ -205,7 +205,16 @@ def draw_path() -> None:
             line = line.strip()
             if line and set(line) <= {'N', 'S', 'E', 'W'}:
                 path = line
-        print(path)
+        # print(path)
+        # for char in path:
+        #     match char:
+        #         case "N":
+                    
+        #         case "S":
+                    
+        #         case "E":
+                    
+        #         case "W":
 
 
 # if __name__ == '__main__':
