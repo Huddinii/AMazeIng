@@ -9,10 +9,10 @@ class TColor:
         self.i = 0
         self.calls = 0
 
-    def __call__(self, maze: str) -> str:
+    def __call__(self, maze: str, on_str: str = 'on_grey') -> str:
         if self.calls == 0:
-            return colored(maze, 'white')
-        return colored(maze, self.colors[self.i])
+            return colored(maze, 'white', on_str)
+        return colored(maze, self.colors[self.i], on_color=on_str)
 
     def next_call(self) -> None:
         self.calls += 1
@@ -27,7 +27,22 @@ def clear_screen() -> None:
 
 def player_interaction() -> None:
     # need actual functions to do the stuff instread of just print
-    # config: dict[str] = config_read()
+    config: dict[str] = config_read()
+    try:
+        mazegen = MazeGenerator(config['height'], config['width'],
+                                config['start'], config['exit'],
+                                config['perfect'], config['algo'])
+        if config['seed'] is not None:
+            mazegen.set_seed(config['seed'])
+        mazegen.generate_maze()
+    except RuntimeError as e:
+        print("Error:", e)
+        exit(0)
+    else:
+        mazegen.out(config['output'])
+
+    maze: list[list[str]] = [[' ' for _ in range(config['width'])]
+                             for _ in range(config['height'])]
     t_color = TColor()
     while 1:
         print("1. Re-generate a new maze")
@@ -38,14 +53,17 @@ def player_interaction() -> None:
         match input_str:
             case "1":
                 clear_screen()
-                draw_maze()
-                fill_maze(t_color)
+                fill_maze(config, maze, t_color)
+                draw_maze(maze)
             case "2":
                 clear_screen()
-                print("Show/Hide path from entry to exit")
+                draw_path(config, maze, t_color)
+                draw_maze(maze)
             case "3":
                 clear_screen()
-                fill_maze(t_color)
+                t_color.next_call()
+                fill_maze(config, maze, t_color)
+                draw_maze(maze)
             case "4":
                 break
 
@@ -77,21 +95,11 @@ def config_read() -> dict[str]:
     return config
 
 
-def draw_maze() -> None:
-    config: dict[str] = config_read()
-
-    try:
-        mazegen = MazeGenerator(config['height'], config['width'],
-                                config['start'], config['exit'],
-                                config['perfect'], config['algo'])
-        if config['seed'] is not None:
-            mazegen.set_seed(config['seed'])
-        mazegen.generate_maze()
-    except RuntimeError as e:
-        print("Error:", e)
-        exit(0)
-    else:
-        mazegen.out(config['output'])
+def draw_maze(maze: list[list]) -> None:
+    for x in range(len(maze)):
+        for y in range(len(maze[x])):
+            print(maze[x][y], end='')
+        print()
 
 
 def top(n: int = 1):
@@ -106,59 +114,71 @@ def top_bottom(n: int = 1):
     return f"\033[53m\033[4m{' ' * n}\033[55m\033[24m"
 
 
-def fill_maze(t_color: TColor) -> None:
-    config: dict[str] = config_read()
+def fill_maze(config: dict, maze: list[list], t_color: TColor) -> None:
+    x, y = 0, 0
     with open(config['output'], "r") as f:
-        maze: list[str] = []
         for line in f:
             if line.startswith("\n"):
                 break
             for char in line:
                 match char:
                     case "\n":
-                        print(t_color("".join(maze)))
-                        maze = []
+                        x += 1
+                        y = 0
                     case "0":
-                        maze.append(t_color("   "))
+                        maze[x][y] = t_color("   ")
+                        y += 1
                     case "1":
-                        maze.append(t_color(top(3)))
+                        maze[x][y] = t_color(top(3))
+                        y += 1
                     case "2":
-                        maze.append(t_color("  |"))
+                        maze[x][y] = t_color("  |")
+                        y += 1
                     case "3":
-                        maze.append(t_color(top(2) + "|"))
+                        maze[x][y] = t_color(top(2) + "|")
+                        y += 1
                     case "4":
-                        maze.append(t_color(bottom(3)))
+                        maze[x][y] = t_color(bottom(3))
+                        y += 1
                     case "5":
-                        maze.append(t_color(top_bottom(3)))
+                        maze[x][y] = t_color(top_bottom(3))
+                        y += 1
                     case "6":
-                        maze.append(t_color(bottom(2) + "|"))
+                        maze[x][y] = t_color(bottom(2) + "|")
+                        y += 1
                     case "7":
-                        maze.append(t_color(top_bottom(2) + "|"))
+                        maze[x][y] = t_color(top_bottom(2) + "|")
+                        y += 1
                     case "8":
-                        maze.append(t_color("|  "))
+                        maze[x][y] = t_color("|  ")
+                        y += 1
                     case "9":
-                        maze.append(t_color("|" + top(2)))
+                        maze[x][y] = t_color("|" + top(2))
+                        y += 1
                     case "A":
-                        maze.append(t_color("| |"))
+                        maze[x][y] = t_color("| |")
+                        y += 1
                     case "B":
-                        maze.append(t_color("|" + top(1) + "|"))
+                        maze[x][y] = t_color("|" + top(1) + "|")
+                        y += 1
                     case "C":
-                        maze.append(t_color("|" + bottom(2)))
+                        maze[x][y] = t_color("|" + bottom(2))
+                        y += 1
                     case "D":
-                        maze.append(t_color("|" + top_bottom(2)))
+                        maze[x][y] = t_color("|" + top_bottom(2))
+                        y += 1
                     case "E":
-                        maze.append(t_color("|" + bottom(1) + "|"))
+                        maze[x][y] = t_color("|" + bottom(1) + "|")
+                        y += 1
                     case "F":
-                        maze.append(colored("\033[36m███"))
+                        maze[x][y] = colored("\033[36m███")
+                        y += 1
 
-        t_color.next_call()
-        start_end_coord(f, config['height'])
+        start_end_coord(maze, t_color, f, config['height'])
 
 
-def start_end_coord(f: IO, maze_height: int) -> dict[str, tuple]:
+def start_end_coord(maze: list[list], t_color: TColor, f: IO, maze_height: int) -> None:
     lines: list[str] = []
-    start: tuple = None
-    end: tuple = None
     for line in f:
         lines.append(line.strip())
 
@@ -168,53 +188,41 @@ def start_end_coord(f: IO, maze_height: int) -> dict[str, tuple]:
 
         if ',' in line and ',' in nextline:
             y_str, x_str = line.split(',', 1)
-            start = (int(y_str.strip()), int(x_str.strip()))
-            print_char(start[0], start[1], colored('█', 'red'))
+            x, y = int(y_str.strip()), int(x_str.strip())
+            maze[x][y] = "\033[41m" + maze[x][y] + "\033[0m"
 
         elif ',' in line and ',' not in nextline:
             y_str, x_str = line.split(',', 1)
-            end = (int(y_str.strip()), int(x_str.strip()))
-            print_char(end[0], end[1], colored('█', 'red'))
-
-    print(f"\033[{maze_height+1};0H", end="", flush=True)
-    ret = {'start': start, 'end': end}
-    return ret
+            x, y = int(y_str.strip()), int(x_str.strip())
+            print(maze[x][y])
+            maze[x][y] = "\033[41m" + maze[x][y] + "\033[0m"
+            print(maze[x][y])
 
 
-def print_char(y: int, x: int, char: str) -> None:
-    # config: dict[str] = config_read()
-    # if y < config['height'] and x < config['width']:
-    print(f"\033[{y+1};{(x*3)+2}H{char}", end="", flush=True)
+def draw_path(config: dict, maze: list[list], t_color: TColor) -> None:
+    path: str = []
 
-
-def draw_path() -> None:
-    config: dict[str] = config_read()
-    path = ''
-    solve = {
-        'N': (0, -1),
-        'S': (0, 1),
-        'E': (3, 0),
-        "W": (-3, 0),
-    }
     with open(config['output'], "r") as f:
-        coords = start_end_coord(f, config['height'])
-        start = coords['start']
-        print(start)
+        x, y = config['start']
         f.seek(0)
         for line in f:
             line = line.strip()
             if line and set(line) <= {'N', 'S', 'E', 'W'}:
                 path = line
-        # print(path)
-        # for char in path:
-        #     match char:
-        #         case "N":
-                    
-        #         case "S":
-                    
-        #         case "E":
-                    
-        #         case "W":
+        for char in path:
+            match char:
+                case "N":
+                    x -= 1
+                    maze[x][y] = t_color(maze[x][y], on_str='on_magenta')
+                case "S":
+                    x += 1
+                    maze[x][y] = t_color(maze[x][y], on_str='on_magenta')
+                case "E":
+                    y += 1
+                    maze[x][y] = t_color(maze[x][y], on_str='on_magenta')
+                case "W":
+                    y -= 1
+                    maze[x][y] = t_color(maze[x][y], on_str='on_magenta')
 
 
 # if __name__ == '__main__':
